@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", Georgia, serif;
+
+  --color-canvas: #f7f6f2;
+  --color-surface: #ffffff;
+  --color-ink: #1d2420;
+  --color-ink-2: #4a544e;
+  --color-ink-3: #7c8680;
+  --color-line: #e8e6df;
+  --color-line-2: #f0eee8;
+
+  --color-brand-50: #eef5f0;
+  --color-brand-100: #d9eadf;
+  --color-brand-200: #b5d4c0;
+  --color-brand-300: #86b799;
+  --color-brand-400: #5a9673;
+  --color-brand-500: #3d7a58;
+  --color-brand-600: #2f6b4f;
+  --color-brand-700: #265640;
+  --color-brand-800: #1f4433;
+
+  --color-blush: #e8a0b4;
+  --color-blush-50: #fbf0f3;
+  --color-amber-soft: #fbf3e2;
+  --color-sky-soft: #eaf3fa;
+
+  --radius-xl2: 1.25rem;
+}
+
+html, body, #root { height: 100%; }
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 2px rgba(29, 36, 32, 0.03), 0 4px 16px -8px rgba(29, 36, 32, 0.06);
+}
+
+.input {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--color-line);
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  font-size: 16px; /* prevents iOS zoom */
+  line-height: 1.3;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.input:focus { border-color: var(--color-brand-400); box-shadow: 0 0 0 3px var(--color-brand-100); }
+@media (min-width: 768px) { .input { font-size: 14px; } }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+.pb-nav { padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)); }
+@media (min-width: 1024px) { .pb-nav { padding-bottom: 2rem; } }
+
+@keyframes slideUp { from { transform: translateY(24px); opacity: 0 } to { transform: none; opacity: 1 } }
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+.anim-up { animation: slideUp .22s ease-out; }
+.anim-fade { animation: fadeIn .18s ease-out; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: #fff; }
+  .card { box-shadow: none; border-color: #ccc; }
+  .print-full { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+}
