@@ -26,6 +26,7 @@ export function InventoryPage() {
   const [inlineEditId, setInlineEditId] = useState<string | null>(null);
   const [inlineVal, setInlineVal] = useState<string>('');
   const [addPrepOpen, setAddPrepOpen] = useState(false);
+  const [hideSpices, setHideSpices] = useState(true);
 
   // Summary metrics
   const stockedCount = state.inventory.filter(isInStock).length;
@@ -43,6 +44,7 @@ export function InventoryPage() {
     return state.inventory
       .filter((i) => {
         if (tab !== 'all' && tab !== 'prepared' && i.location !== tab) return false;
+        if (hideSpices && catFilter === 'all' && !q && i.category === 'spices') return false;
         if (catFilter !== 'all' && i.category !== catFilter) return false;
         if (q && !i.name.toLowerCase().includes(q.toLowerCase()) && !(i.notes ?? '').toLowerCase().includes(q.toLowerCase())) return false;
         if (expFilter === 'low' && !isLowStock(i)) return false;
@@ -58,7 +60,7 @@ export function InventoryPage() {
         if (sortBy === 'qty') return (a.quantity ?? -1) - (b.quantity ?? -1);
         return a.name.localeCompare(b.name);
       });
-  }, [state.inventory, tab, catFilter, q, expFilter, sortBy]);
+  }, [state.inventory, tab, catFilter, q, expFilter, sortBy, hideSpices]);
 
   const toggleSelect = (id: string) =>
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
@@ -257,6 +259,13 @@ export function InventoryPage() {
                 <option value="expiry">Sort: Expiration</option>
                 <option value="qty">Sort: Quantity</option>
               </Select>
+              <Button
+                size="sm"
+                variant={hideSpices ? 'secondary' : 'soft'}
+                onClick={() => setHideSpices(!hideSpices)}
+              >
+                {hideSpices ? 'Show 21 spices' : 'Hide spices'}
+              </Button>
             </div>
           </div>
 

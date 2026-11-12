@@ -46,7 +46,7 @@ export const defaultPrefs: UserPreferences = {
   favoriteStores: ['traderjoes', 'walmart', 'target'],
   lowStockDefault: 1,
   trainingEnabled: true,
-  onboarded: false,
+  onboarded: true,
 };
 
 /**

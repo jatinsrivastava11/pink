@@ -20,8 +20,26 @@ const LS_BACKUP_KEY = 'pink-kitchen-backup';
  * IndexedDB is the primary store. A localStorage mirror is kept as a second
  * copy (best-effort) so data survives an IndexedDB hiccup.
  */
+let lastSyncedRaw = '';
+
 const idbStorage: StateStorage = {
   getItem: async (name) => {
+    // 1. Try Mac/Phone shared sync endpoint first when running in browser
+    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+      try {
+        const res = await fetch('/api/sync', { cache: 'no-store' });
+        if (res.ok) {
+          const text = await res.text();
+          if (text && text !== 'null' && text.startsWith('{')) {
+            lastSyncedRaw = text;
+            try { await idbSet(name, text); } catch {}
+            return text;
+          }
+        }
+      } catch {
+        /* offline or unit test environment — fall back to IndexedDB */
+      }
+    }
     try {
       const v = await idbGet<string>(name);
       if (v != null) return v;
@@ -31,6 +49,7 @@ const idbStorage: StateStorage = {
     return localStorage.getItem(LS_BACKUP_KEY);
   },
   setItem: async (name, value) => {
+    lastSyncedRaw = value;
     try {
       await idbSet(name, value);
     } catch (e) {
@@ -40,6 +59,13 @@ const idbStorage: StateStorage = {
       localStorage.setItem(LS_BACKUP_KEY, value);
     } catch {
       /* quota – IndexedDB copy is primary */
+    }
+    if (typeof window !== 'undefined' && typeof fetch === 'function') {
+      fetch('/api/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: value,
+      }).catch(() => {});
     }
   },
   removeItem: async (name) => {
@@ -519,6 +545,30 @@ export function slotFor(cat: Recipe['category']): MealSlot {
 // Ask the browser to keep our storage (reduces eviction risk on iOS/Safari).
 if (typeof navigator !== 'undefined' && navigator.storage?.persist) {
   navigator.storage.persist().catch(() => {});
+}
+
+// Live cross-device polling between Mac & iPhone
+if (typeof window !== 'undefined' && typeof fetch === 'function') {
+  const pullRemote = async () => {
+    try {
+      const res = await fetch('/api/sync', { cache: 'no-store' });
+      if (!res.ok) return;
+      const text = await res.text();
+      if (!text || text === 'null' || text === lastSyncedRaw || !text.startsWith('{')) return;
+      const parsed = JSON.parse(text);
+      if (parsed?.state) {
+        lastSyncedRaw = text;
+        useStore.setState({ ...migrate(parsed.state) });
+      }
+    } catch {
+      /* ignore when offline */
+    }
+  };
+  setInterval(pullRemote, 3500);
+  window.addEventListener('focus', pullRemote);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') pullRemote();
+  });
 }
 
 export type { Nutrients, Unit, PriceSource };

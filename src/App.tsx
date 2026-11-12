@@ -26,6 +26,14 @@ const NAV = [
   { to: '/settings', label: 'Settings', icon: Settings },
 ];
 
+const MOBILE_NAV = [
+  { to: '/', label: 'Today', icon: Home, end: true },
+  { to: '/inventory', label: 'Kitchen', icon: Package },
+  { to: '/meals', label: 'Meals', icon: Utensils },
+  { to: '/groceries', label: 'Shop', icon: ShoppingCart },
+  { to: '/nutrition', label: 'Track', icon: Flame },
+];
+
 export default function App() {
   const lowCount = useStore((s) => s.inventory.filter(isLowStock).length);
   const preparedCount = useStore((s) => s.prepared.reduce((sum, p) => sum + p.servings, 0));
@@ -104,12 +112,12 @@ export default function App() {
             <span className="font-display text-base">Pink Kitchen</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <button
-              onClick={modals.openSupport}
-              className="px-2.5 py-1.5 rounded-xl bg-brand-50 text-brand-700 text-xs font-medium flex items-center gap-1"
-            >
-              <HeartHandshake size={13} /> Need help?
-            </button>
+            <NavLink to="/planner" className="px-2.5 py-1.5 rounded-xl bg-line-2 text-ink-2 text-xs font-medium">
+              Plan
+            </NavLink>
+            <NavLink to="/settings" className="p-1.5 rounded-xl bg-line-2 text-ink-2" aria-label="Settings">
+              <Settings size={15} />
+            </NavLink>
             <button
               onClick={() => modals.openTrip()}
               className="px-2.5 py-1.5 rounded-xl bg-brand-600 text-white text-xs font-medium flex items-center gap-1"
@@ -133,10 +141,10 @@ export default function App() {
           </Routes>
         </main>
 
-        {/* Mobile Bottom Navigation */}
+        {/* Mobile Bottom Navigation — Clean 5 core tabs */}
         <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-surface/95 backdrop-blur border-t border-line safe-bottom no-print">
-          <div className="grid grid-cols-8 gap-0.5 px-1 py-1.5">
-            {NAV.map((item) => {
+          <div className="grid grid-cols-5 gap-1 px-2 py-1.5">
+            {MOBILE_NAV.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
@@ -144,13 +152,13 @@ export default function App() {
                   to={item.to}
                   end={item.end}
                   className={({ isActive }) =>
-                    `flex flex-col items-center justify-center py-1 rounded-lg text-[10px] font-medium ${
+                    `flex flex-col items-center justify-center py-1.5 rounded-xl text-xs font-medium ${
                       isActive ? 'text-brand-700 bg-brand-50' : 'text-ink-3'
                     }`
                   }
                 >
-                  <Icon size={16} />
-                  <span className="truncate max-w-full px-0.5 mt-0.5">{item.label.split(' ')[0]}</span>
+                  <Icon size={18} />
+                  <span className="mt-0.5">{item.label}</span>
                 </NavLink>
               );
             })}
